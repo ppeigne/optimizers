@@ -10,7 +10,10 @@ Gradient descent optimization algoritms
 * RMSprop
 * Adam
 
+[Why Momentum Really Works - Goh](https://distill.pub/2017/momentum/)
+
 [Nesterov Accelerated Gradient and Momentum - jlmelville](https://jlmelville.github.io/mize/nesterov.html)
+
  
 [An overview of gradient descent optimization algorithms - Sebastian Ruder](https://ruder.io/optimizing-gradient-descent/index.html)
 * Momentum
@@ -22,6 +25,9 @@ Gradient descent optimization algoritms
 * AdaMax
 * Nadam
 * AMSGrad
+
+[Optimization for Deep Learning - Sebastian Ruder](https://www.slideshare.net/SebastianRuder/optimization-for-deep-learning)
+
 
 [An updated overview of recent gradient descent algorithms - John Chen](https://johnchenresearch.github.io/demon/)
 * Momentum
