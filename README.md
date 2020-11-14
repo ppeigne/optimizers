@@ -9,6 +9,8 @@ Gradient descent optimization algoritms
 * Adagrad
 * RMSprop
 * Adam
+
+[Nesterov Accelerated Gradient and Momentum - jlmelville](https://jlmelville.github.io/mize/nesterov.html)
  
 [An overview of gradient descent optimization algorithms - Sebastian Ruder](https://ruder.io/optimizing-gradient-descent/index.html)
 * Momentum
