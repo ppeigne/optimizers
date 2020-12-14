@@ -2,24 +2,28 @@ class Optimizer_():
     def __init__(self, model):
         self.model = model
 
-    def batch_optimization(self, y, data, n_cycles, learning_rate, learning_rate_decay=True):
+    def batch_optimization(self, X, y, n_cycles, learning_rate, learning_rate_decay=False):
         for self.epoch in range(n_cycles):
-            results = self.model.forward(data) #, self.model.params)
-            gradient = self.model.backward(data, y, results)
+            #if self.epoch % 10000 == 0:
+            #    print("update: ", self.model.params)
+            results = self.model.forward(X) #, self.model.params)
+            gradient = self.model.backward(X, y, results)
+            #if self.epoch % 10000 == 0:
+            #    print("gradient: ", self.update(self.model.params, gradient, learning_rate, learning_rate_decay))
             self.model.params = self.update(self.model.params, gradient, learning_rate, learning_rate_decay)
         return self.model
 
-    def minibatch_optimization(self, data, n_cycles, batch_size, learning_rate, learning_rate_decay=True):
-        m, _ = data.shape
+    def minibatch_optimization(self, X, y, n_cycles, batch_size, learning_rate, learning_rate_decay=True):
+        m, _ = X.shape
         for self.epoch in range(n_cycles):
             for t in range(m // batch_size):
-                mini_batch = data[:, batch_size * t:batch_size * (t + 1)]     
+                mini_batch = X[:, batch_size * t:batch_size * (t + 1)]     
                 results = self.model.forward(mini_batch, self.model.params)
                 gradient = self.model.backward(mini_batch, results)
                 self.model.params = self.update(self.model.params, gradient, learning_rate, learning_rate_decay)
             rest = m % batch_size
             if rest != 0:
-                final_batch = data[:, -rest:]
+                final_batch = X[:, -rest:]
                 results = self.model.forward(final_batch, self.model.params)
                 gradient = self.model.backward(final_batch, results)
                 self.model.params = self.update(self.model.params, gradient, learning_rate, learning_rate_decay)
@@ -28,7 +32,6 @@ class Optimizer_():
     def update(self, params, gradient, learning_rate, learning_rate_decay):
         for l in range(len(params)):
             for param in params[l].keys():
-                
                 if learning_rate_decay: 
                     param_update = self._update_rule(gradient, l, param, learning_rate ** self.epoch)
                 else:
