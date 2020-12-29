@@ -1,35 +1,114 @@
 import numpy as np
-from optimizers import Optimizer_
+from optimizers import Optimizer_, MomentumOptimizer_, RMSOptimizer_, AdamOptimizer_
 
-class LogisticRegression():
-    def __init__(self, n_input=2): # activation="sigmoid"):
-        #self.w = np.random.random((1, n_input))
-        #self.b = np.random.random(1)
-        self.generate_params(n_input)
-                #self.activation = activation
+class LinearRegression_():
+    def __init__(self, optimizer="gradient"):
+        self.params = None
+        self.optimizer = self._select_optimizer(optimizer)
 
-    def generate_params(self, n_input):
+    def _select_optimizer(self, optimizer):
+        options = {
+            "gradient": Optimizer_(self),
+            "momentum": MomentumOptimizer_(self),
+            "rms": RMSOptimizer_(self),
+            "adam": AdamOptimizer_(self)
+        }
+        return options[optimizer]
+
+    def _generate_params(self, n_input):
         self.params= [{}]
         self.params[0]['theta'] = np.random.random((n_input + 1, 1))
 
-    def _sigmoid(self, x):
-        return 1 / (1 + np.exp(x))
+    def _add_intercept(self, x):
+        return np.concatenate((np.ones((x.shape[0], 1)), x), axis= 1)
 
-    def _add_intercept(self, x)
-        return np.concatenate((np.ones(x.shape[0]), x), axis= 1)
+    # def forward(self, X):
+    #     if not self.params:
+    #         self._generate_params(X.shape[1])
+    #     X_ = self._add_intercept(X)
+    #     return self._sigmoid(X_ @ self.params[0]['theta'])
 
-    def forward(self, X):
+    def predict(self, X):
+        if not self.params:
+            self._generate_params(X.shape[1])
         X_ = self._add_intercept(X)
-        return self._sigmoid((X_ @ se + self.b)
+        return X_ @ self.params[0]['theta']
 
-    def backward(self, X, y, y_pred):
-        m = X.shape[1]
-        X_ = np.concatenate((np.ones((1, m)), X), axis=0)
-        grad = X_ @ (y_pred - y).T / m
+        return self.forward(X)
+
+    # def backward(self, X, y, y_pred):
+    #     X_ = self._add_intercept(X)
+    #     y = y.reshape(-1, 1)
+    #     gradient = [{}]
+    #     gradient[0]['theta'] = X_.T @ (y_pred - y) / X.shape[1]
+    #     return gradient
+
+    def gradient(self, X, y, y_pred):
+        X_ = self._add_intercept(X)
+        y = y.reshape(-1, 1)
         gradient = [{}]
-        gradient[0]['b'] = grad[0]
-        gradient[0]['W'] = grad[1:].T 
+        gradient[0]['theta'] = X_.T @ (y_pred - y) / X.shape[1]
         return gradient
+
+    def fit(self, X, y, n_cycles=10000, learning_rate=0.1):
+        self.optimizer.optimize(X, y, n_cycles, learning_rate)
+
+class LogisticRegression_(LinearRegression_):
+      def _sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def predict(self, X):
+        X_ = self._add_intercept(X)
+        return self._sigmoid(X_ @ self.params[0]['theta'])
+
+    # def gradient(self, X, y, y_pred):
+    #     X_ = self._add_intercept(X)
+    #     y = y.reshape(-1, 1)
+    #     gradient = [{}]
+    #     gradient[0]['theta'] = X_.T @ (y_pred - y) / X.shape[1]
+    #     return gradient
+
+class RidgeRegression_(LinearRegression_):
+    def gradient(self, X, y, y_pred):
+        m = X.shape[1]
+        X_ = self._add_intercept(X)
+        y = y.reshape(-1, 1)
+            # tmp_theta will be used to get the sum of thetas without the intercept (theta[0])
+        tmp_theta = np.copy(self.params[0]['theta'])
+        tmp_theta[0] = 0
+        gradient = [{}]
+        gradient[0]['theta'] = (X_.T @ (y_pred - y) + tmp_theta @ tmp_theta) / m 
+        return gradient
+
+
+        
+
+# class LogisticRegression_(LinearRegression_):
+#     def __init__(self, n_input=2):
+#         self.generate_params(n_input)
+
+#     def generate_params(self, n_input):
+#         self.params= [{}]
+#         self.params[0]['theta'] = np.random.random((n_input + 1, 1))
+
+#     def _sigmoid(self, x):
+#         return 1 / (1 + np.exp(-x))
+
+#     def _add_intercept(self, x):
+#         return np.concatenate((np.ones((x.shape[0], 1)), x), axis= 1)
+
+#     def forward(self, X):
+#         X_ = self._add_intercept(X)
+#         return self._sigmoid(X_ @ self.params[0]['theta'])
+
+#     def backward(self, X, y, y_pred):
+#         m = X.shape[1]
+#         X_ = self._add_intercept(X)
+#         y = y.reshape(-1, 1)
+#         gradient = [{}]
+#         gradient[0]['theta'] = X_.T @ (y_pred - y) / m
+#         return gradient
+
 
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -43,33 +122,37 @@ y = data.target
 x = MinMaxScaler().fit_transform(x)
 
 X_train, X_test, y_train, y_test = train_test_split(x, y)
-x_ = X_train.T
-y_ = y_train.T
+x_ = X_train
+y_ = y_train
 
-p1 = Perceptron(x_.shape[0])
-print(p1.params)
-o1 = Optimizer_(p1)
-o1.batch_optimization(x_, y_ == 0, 100000,.1)
-print(p1.params)
-prev1 = p1.forward(X_test.T)
+#print(x_.shape)
 
-p2 = Perceptron(x_.shape[0])
-print(p2.params)
-o2 = Optimizer_(p1)
-o2.batch_optimization(x_, y_ == 1, 100000,.1)
-print(p2.params)
-prev2 = p2.forward(X_test.T)
+p1 = LinearModel_()#x_.shape[1])
+#print("params before: ",p1.params)
+#o1 = Optimizer_(p1)
+#o1.batch_optimization(x_, y_ == 0, 100000,.1)
+p1.fit(x_, y_ == 0)
+#print("params after: ", p1.params)
+prev1 = p1.predict(X_test)
 
-p3 = Perceptron(x_.shape[0])
-print(p3.params)
-o2 = Optimizer_(p1)
-o2.batch_optimization(x_, y_ == 2, 100000,.1)
-print(p3.params)
-prev3 = p3.forward(X_test.T)
+print(prev1)
 
-prev = pd.DataFrame(np.concatenate((prev1, prev2, prev3), axis=0).T).idxmax(axis=1)
-print(prev)
+# p2 = LinearModel_(x_.shape[1])
+# #print(p2.params)
+# o2 = Optimizer_(p1)
+# o2.batch_optimization(x_, y_ == 1, 100000,.1)
+# #print(p2.params)
+# prev2 = p2.forward(X_test)
 
-met = precision_score(y_test == 0,(prev.T < .5))
-print(met)
+# p3 = LinearModel_(x_.shape[1])
+# #print(p3.params)
+# o2 = Optimizer_(p1)
+# o2.batch_optimization(x_, y_ == 2, 100000,.1)
+# #print(p3.params)
+# prev3 = p3.forward(X_test)
 
+# prev = pd.DataFrame(np.concatenate((prev1, prev2, prev3), axis=1)).idxmax(axis=1)
+# print(prev)
+
+# met = precision_score(y_test,(prev < .5), average='macro')
+# print(met)
